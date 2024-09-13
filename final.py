@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# ----------------- Header Files ---------------------#
-
 from __future__ import division, print_function, unicode_literals
 
 import sys
@@ -25,7 +22,7 @@ global password
 def load_image(name):
     return Image.open(name)
 
-# ----------------- Functions for encryption ---------------------#
+
 def prepare_message_image(image, size):
     if size != image.size:
         image = image.resize(size, Image.ANTIALIAS)
@@ -80,7 +77,7 @@ def generate_image_back(secret_image, ciphered_image):
     return new_image
 
 
-#------------------------Encryption -------------------#
+
 def level_one_encrypt(Imagename):
     message_image = load_image(Imagename)
     size = message_image.size
@@ -95,7 +92,7 @@ def level_one_encrypt(Imagename):
 
 
 
-# -------------------- Construct Encrypted Image  ----------------#
+
 def construct_enc_image(ciphertext,relength,width,height):
     asciicipher = binascii.hexlify(ciphertext)
     def replace_all(text, dic):
@@ -103,17 +100,17 @@ def construct_enc_image(ciphertext,relength,width,height):
             text = text.replace(i, j)
         return text
 
-    # use replace function to replace ascii cipher characters with numbers
+
     reps = {'a':'1', 'b':'2', 'c':'3', 'd':'4', 'e':'5', 'f':'6', 'g':'7', 'h':'8', 'i':'9', 'j':'10', 'k':'11', 'l':'12', 'm':'13', 'n':'14', 'o':'15', 'p':'16', 'q':'17', 'r':'18', 's':'19', 't':'20', 'u':'21', 'v':'22', 'w':'23', 'x':'24', 'y':'25', 'z':'26'}
     asciiciphertxt = replace_all(asciicipher, reps)
 
-        # construct encrypted image
+     
     step = 3
     encimageone=[asciiciphertxt[i:i+step] for i in range(0, len(asciiciphertxt), step)]
-       # if the last pixel RGB value is less than 3-digits, add a digit a 1
+       
     if int(encimageone[len(encimageone)-1]) < 100:
         encimageone[len(encimageone)-1] += "1"
-        # check to see if we can divide the string into partitions of 3 digits.  if not, fill in with some garbage RGB values
+       
     if len(encimageone) % 3 != 0:
         while (len(encimageone) % 3 != 0):
             encimageone.append("101")
@@ -128,7 +125,7 @@ def construct_enc_image(ciphertext,relength,width,height):
     encim.save("visual_encrypt.jpeg")
 
 
-#------------------------- Visual-encryption -------------------------#
+
 def encrypt(imagename,password):
     plaintext = list()
     plaintextstr = ""
@@ -139,7 +136,7 @@ def encrypt(imagename,password):
     width = im.size[0]
     height = im.size[1]
     
-    # break up the image into a list, each with pixel values and then append to a string
+   
     for y in range(0,height):
         for x in range(0,width):
             print (pix[x,y]) 
@@ -147,28 +144,28 @@ def encrypt(imagename,password):
     print(width)
     print(height)
 
-    # add 100 to each tuple value to make sure each are 3 digits long.  
+    
     for i in range(0,len(plaintext)):
         for j in range(0,3):
             aa = int(plaintext[i][j])+100
             plaintextstr = plaintextstr + str(aa)
 
 
-    # length save for encrypted image reconstruction
+  
     relength = len(plaintext)
 
-    # append dimensions of image for reconstruction after decryption
+    
     plaintextstr += "h" + str(height) + "h" + "w" + str(width) + "w"
 
-    # make sure that plantextstr length is a multiple of 16 for AES.  if not, append "n". 
+   
     while (len(plaintextstr) % 16 != 0):
         plaintextstr = plaintextstr + "n"
 
-    # encrypt plaintext
+  
     obj = AES.new(password, AES.MODE_CBC, 'This is an IV456')
     ciphertext = obj.encrypt(plaintextstr)
 
-    # write ciphertext to file for analysis
+
     cipher_name = imagename + ".crypt"
     g = open(cipher_name, 'w')
     g.write(ciphertext)
